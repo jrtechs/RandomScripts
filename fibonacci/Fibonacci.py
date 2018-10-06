@@ -1,3 +1,6 @@
+import math as math
+
+
 def fib(n):
     if n == 0 or n == 1:
         return n
@@ -39,11 +42,18 @@ def fibPower(n):
     return power(l, n)[1]
 
 
+
+def fibClosedFormula(n):
+    p = ((1+ math.sqrt(5))/2)**n
+    v = ((1-math.sqrt(5))/2)**n
+    return (p-v)/math.sqrt(5)
+
+
 """
 Makes sure that other programs don't execute the main
 """
 if __name__ == '__main__':
     try:
-        print(fib(30))
+        print(closedFormula(6))
     except KeyboardInterrupt:
         exit()
