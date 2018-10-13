@@ -17,5 +17,5 @@ def selectionSort(alist):
        alist[positionOfMax] = temp
     return alist
 
-print(shortBubbleSort(alist))
+print(selectionSort(alist))
 
