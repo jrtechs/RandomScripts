@@ -6,6 +6,13 @@ Jeffery Russell
 """
 
 
+def generateMinOrdering(C, i, j):
+    if i == j:
+        return str(i)
+    return "(" + generateMinOrdering(C, i, C[i -1][j -1]) + generateMinOrdering(C, C[i -1][ j -1] +1, j) + ")"
+
+
+
 def minMul(S):
     """
     Simple function to print the matrixes used in
@@ -41,7 +48,10 @@ def minMul(S):
     for i in range(0, n):
         for y in range(0, n):
             print(str(c[i][y]) + " ", end =" ")
-        print()    
+        print()
+
+    print(generateMinOrdering(c, 1, len(S)))
+
 
 
 """
@@ -49,7 +59,8 @@ Makes sure that other programs don't execute the main
 """
 if __name__ == '__main__':
     try:
-        minMul([(10,100),(100, 5),(5, 50)])
-        #minMul([(5,10),(10,3),(3,12), (12,5), (5,50), (50,6)])
+        #minMul([(10,100),(100, 5),(5, 50)])
+        minMul([(5,10),(10,3),(3,12), (12,5), (5,50), (50,6)])
+        #minMul([(30,35),(35,15),(15,5), (5,10), (10,20), (20,25)])
     except KeyboardInterrupt:
         exit()
