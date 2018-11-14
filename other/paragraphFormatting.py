@@ -1,3 +1,10 @@
+import math
+
+"""
+Jeffery Russell
+11-13-18
+"""
+
 
 def extraSpace(S, M, i, j):
     """
@@ -28,7 +35,7 @@ def badnessLine(S, M, i, j):
     """
     es = extraSpace(S, M, i, j)
     if es < 0:
-        return float("infinity")
+        return math.inf
     return es
 
 
@@ -44,19 +51,17 @@ def minBad(S, M, i):
     :param M: Max length of line
     :param i: start word index
     """
-    if len(S) == 0:
+    if badnessLine(S, M, i, len(S) -1) != math.inf:
         return 0
 
-    # Calculate the current line's badness
-    curBad = 0
+    min = math.inf
 
-    k = i
-    while curBad > badnessLine(S, M, i, k):
-        curBad = badnessLine(S, M, i, k)
-        k = k + 1
-
-    return max(curBad, badnessLine(S, M, k))
-
+    for k in range(i + 1, len(S)):
+        end = minBad(S, M, k)
+        front = badnessLine(S, M, i, k - 1)
+        max = end if end > front else front
+        min = min if min < max else max
+    return min
 
 
 def minBadDynamic(S, M):
@@ -68,20 +73,63 @@ def minBadDynamic(S, M):
     :param S: List of words
     :param M: Max length of line
     """
-    pass
+    cost = [math.inf for i in range(len(S))]
+
+    for i in range(0, len(S)):
+        if badnessLine(S, M, 0, i) != math.inf:
+            cost[i] = badnessLine(S, M, 0, i)
+            if i == len(S) -1:
+                return 0 #Everything fit on one line
+        else:
+            min = math.inf
+            for k in range(0, i):
+                before = cost[k]
+                after = badnessLine(S, M, k + 1, i)
+                if i == len(S) -1 and badnessLine(S, M, k+1, i) != math.inf:
+                    after = 0 # Last Line
+                max = before if before > after else after
+                min = min if min < max else max
+            cost[i] = min
+    return cost[len(S) -1]
 
 
 def minBadDynamicChoice(S, M):
     """
     Write a procedure minBadDynamicChoice that implements
-    the function mb 0 using dynamic
+    the function mb' using dynamic
     programming. In addition to returning mb(S, M ), it
     should also return the choices made
 
     :param S: List of words
     :param M: Max length of line
     """
-    pass
+    cost = [math.inf for i in range(len(S))]
+
+    # List of tuples indicating start/end indices of line
+    choice = [[] for i in range(len(S))]
+
+    for i in range(0, len(S)):
+        if badnessLine(S, M, 0, i) != math.inf:
+            cost[i] = badnessLine(S, M, 0, i)
+            choice[i] = [(0, i)]
+            if i == len(S) - 1:
+                return 0, [(0,i)] # One line
+        else:
+            min = math.inf
+            choiceCanidate = []
+            for k in range(0, i): # Finds the optimal solution
+                before = cost[k] # Previously computed minimum
+                after = badnessLine(S, M, k + 1, i) # Badness of new slice
+                if i == len(S) - 1 and badnessLine(S, M, k+1, i) != math.inf:
+                    after = 0 # Last line
+                max = before if before > after else after
+                if min > max:
+                    # Captures where slice is being taken
+                    choiceCanidate = choice[k] + [(k+1, i)]
+                    min = max
+            choice[i] = choiceCanidate
+            cost[i] = min
+    return cost[len(S) -1], choice[len(S) -1]
 
 
 def printParagraph(S, M):
@@ -92,7 +140,23 @@ def printParagraph(S, M):
     What is the asymptotic running time of your
     algorithm?
 
+    This program will run asymptotically in O(n^2) due
+    to the characteristic of calculating the minBad
+    for each sub sequence and then looping through a
+    maximum of |S| to find the optimal solution.
+
     :param S: List of words
     :param M: Max length of line
     """
-    pass
+    cost, choice = minBadDynamicChoice(S, M)
+    print()
+    for i in range(0, len(choice)):
+        for x in range(choice[i][0], choice[i][1] + 1):
+            print(str(S[x]), end=" ")
+        print()
+
+
+print(minBadDynamicChoice(["aaa", "aaa"], 6))
+printParagraph(["jjjjjj","aaa", "bb", "cc", "ff", "mm", "ddddd", "ddddd"], 6)
+
+printParagraph(["jjjjjj"], 6)
