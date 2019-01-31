@@ -44,18 +44,29 @@ public class TaskManager
 
         Thread[] runners = new Thread[desiredThreads];
 
-        System.out.println("Total Tasks: " + tasks.size());
-        System.out.println("Threads Used:" + desiredThreads);
-
-
         for(int i = 0; i < desiredThreads; i++)
         {
             runners[i] = new Thread(()->
             {
-                while(!tasks.isEmpty())
+                ReadTask t = null;
+                while(true)
                 {
-                    ReadTask t = tasks.remove(0);
-                    t.runTask();
+                    //need synchronized block to prevent
+                    //race condition
+                    synchronized (tasks)
+                    {
+                        if(!tasks.isEmpty())
+                            t = tasks.remove(0);
+                    }
+                    if(t == null)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        t.runTask();
+                        t = null;
+                    }
                 }
             });
             runners[i].start();
