@@ -1,8 +1,6 @@
 <html>
 <head>
-
     <script>
-
         class Gene
         {
             constructor(min, max, value)
@@ -31,6 +29,11 @@
             {
                 return new Gene(this.min, this.max, this.value);
             }
+
+            makeRandomGene()
+            {
+                return new Gene(this.min, this.max, Math.random());
+            }
         }
 
 
@@ -54,10 +57,20 @@
             {
                 this.genes[Math.round(Math.random() * (this.genes.length-1))].setValue(Math.random());
             }
+
+            createRandomChromosome()
+            {
+                let geneAr = [];
+                for(let i = 0; i < this.genes.length; i++)
+                {
+                    geneAr.push(this.genes[i].makeRandomGene());
+                }
+                return new Chromosome(geneAr);
+            }
         }
 
 
-        const mate = function(father, mother)
+        const breed = function(father, mother)
         {
             let son = new Chromosome(father.getGenes());
             let daughter = new Chromosome(mother.getGenes());
@@ -67,6 +80,48 @@
                 let blendCoef = Math.random();
                 blendGene(son.getGenes()[i], daughter.getGenes()[i], blendCoef);
             }
+
+            return [son, daughter];
+        };
+
+        function predicateBy(prop)
+        {
+            return function(a,b)
+            {
+                var result;
+                if(a[prop] > b[prop])
+                {
+                    result =  1;
+                }
+                else if(a[prop] < b[prop])
+                {
+                    result = -1;
+                }
+                return result;
+            }
+        }
+
+
+        const naturalSelection = function(population, keepNumber, fitnessFunction)
+        {
+            let fitnessArray = [];
+            for(let i = 0; i < population.length; i++)
+            {
+                const fitness = fitnessFunction(population[i]);
+                console.log(fitness);
+                fitnessArray.push({fit:fitness, chrom: population[i]});
+            }
+
+            fitnessArray.sort(predicateBy("fit"));
+
+            let survivors = [];
+            let bestFitness = fitnessArray[0].fit;
+            let bestChromosome = fitnessArray[0].chrom;
+            for(let i = 0; i < keepNumber; i++)
+            {
+                survivors.push(fitnessArray[i].chrom);
+            }
+            return {survivors: survivors, bestFit: bestFitness, bestChrom: bestChromosome};
         };
 
         const blendGene = function(gene1, gene2, blendCoef)
@@ -80,20 +135,115 @@
             gene2.setValue(value2);
         };
 
-        let gene1 = new Gene(1,10,.6);
-        let gene2 = new Gene(2,5,0.4);
+        const matePopulation = function(population, desiredPopulationSize)
+        {
+            let pairsNeeded = (desiredPopulationSize - population.length)/2;
+            const originalLength = population.length;
+            for(let i = 0; i < pairsNeeded; i++)
+            {
+                let index1 = Math.round(Math.random() * (originalLength-1));
+                let index2 = Math.round(Math.random() * (originalLength-1));
+                if(index1 !== index2)
+                {
+                    const babies = breed(population[index1], population[index2]);
+                    population.push(babies[0]);
+                    population.push(babies[1]);
+                }
+            }
+        };
+
+
+        const mutatePopulation = function(population, mutatePercentage)
+        {
+            if(population.length >= 2)
+            {
+                let mutations = mutatePercentage *
+                                population.length *
+                                population[0].getGenes().length;
+                for(let i = 0; i < mutations; i++)
+                {
+                    population[i].mutate();
+                }
+            }
+            else
+            {
+                console.log("Error, population too small to mutate");
+            }
+        };
+
+        const newBlood = function(population, immigrationSize)
+        {
+            for(let i = 0; i < immigrationSize; i++)
+            {
+                let geneticChromosome = population[0];
+                population.push(geneticChromosome.createRandomChromosome());
+            }
+        };
+
+
+        const basicCostFunction = function(chromosome)
+        {
+            console.log(chromosome);
+            console.log((chromosome.getGenes()[0].getRealValue()));
+            return Math.abs(chromosome.getGenes()[0].getRealValue() - 6) +
+                Math.abs(chromosome.getGenes()[1].getRealValue() - 2);
+        };
+
+
+        const createRandomPopulation = function(geneticChromosome, populationSize)
+        {
+            let population = [];
+            for(let i = 0; i < populationSize; i++)
+            {
+                population.push(geneticChromosome.createRandomChromosome());
+            }
+            return population;
+        };
+
+
+        const runGeneticOptimization = function(geneticChromosome, constFunction,
+                                                populationSize, maxGenerations,
+                                                desiredCost, mutationRate, keepNumber,
+                                                newBloodNumber)
+        {
+            let population = createRandomPopulation(geneticChromosome, populationSize);
+
+            let generation = 0;
+
+            let bestCost = Number.MAX_VALUE;
+            let bestChromosome = geneticChromosome;
+
+            do
+            {
+                matePopulation(population, populationSize);
+                newBlood(population, newBloodNumber);
+                mutatePopulation(population, mutationRate);
+                let generationResult = naturalSelection(population, keepNumber, constFunction);
+
+                if(bestCost > generationResult.bestFit)
+                {
+                    bestChromosome = generationResult.bestChrom;
+                    bestCost = generationResult.bestFit;
+                }
+                population = generationResult.survivors;
+
+                generation++;
+                console.log("Generation " + generation + " Best Cost: " + bestCost);
+
+                console.log(generationResult);
+            }while(generation < maxGenerations && bestCost > desiredCost);
+            return bestChromosome;
+        };
+
+        let gene1 = new Gene(1,10,10);
+        let gene2 = new Gene(1,10,0.4);
         let geneList = [gene1, gene2];
 
-        var c = new Chromosome(geneList);
-        var c2 = new Chromosome(c.getGenes());
-        console.log(c.getGenes());
-        console.log(c2.getGenes());
-        c.mutate();
-        c.mutate();
-        console.log(c.getGenes());
-        console.log(c2.getGenes());
-    </script>
+        let exampleOrganism = new Chromosome(geneList);
 
+        runGeneticOptimization(exampleOrganism, basicCostFunction, 100, 50, 0.01, 0.3, 20, 10);
+
+    </script>
 </head>
 
 
