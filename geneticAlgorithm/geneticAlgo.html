@@ -1,0 +1,104 @@
+<html>
+<head>
+
+    <script>
+
+        class Gene
+        {
+            constructor(min, max, value)
+            {
+                this.min = min;
+                this.max = max;
+                this.value = value;
+            }
+
+            getRealValue()
+            {
+                return (this.max - this.min) * this.value + this.min;
+            }
+
+            getValue()
+            {
+                return this.value;
+            }
+
+            setValue(val)
+            {
+                this.value = val;
+            }
+
+            makeClone()
+            {
+                return new Gene(this.min, this.max, this.value);
+            }
+        }
+
+
+        class Chromosome
+        {
+            constructor(geneArray)
+            {
+                this.genes = [];
+                for(let i = 0; i < geneArray.length; i++)
+                {
+                    this.genes.push(geneArray[i].makeClone());
+                }
+            }
+
+            getGenes()
+            {
+                return this.genes;
+            }
+
+            mutate()
+            {
+                this.genes[Math.round(Math.random() * (this.genes.length-1))].setValue(Math.random());
+            }
+        }
+
+
+        const mate = function(father, mother)
+        {
+            let son = new Chromosome(father.getGenes());
+            let daughter = new Chromosome(mother.getGenes());
+
+            for(let i = 0;i < son.getGenes().length; i++)
+            {
+                let blendCoef = Math.random();
+                blendGene(son.getGenes()[i], daughter.getGenes()[i], blendCoef);
+            }
+        };
+
+        const blendGene = function(gene1, gene2, blendCoef)
+        {
+            let value1 = (blendCoef * gene1.getValue()) +
+                (gene2.getValue() * (1- blendCoef));
+            let value2 = ((1-blendCoef) * gene1.getValue()) +
+                (gene2.getValue() * blendCoef);
+
+            gene1.setValue(value1);
+            gene2.setValue(value2);
+        };
+
+        let gene1 = new Gene(1,10,.6);
+        let gene2 = new Gene(2,5,0.4);
+        let geneList = [gene1, gene2];
+
+        var c = new Chromosome(geneList);
+        var c2 = new Chromosome(c.getGenes());
+        console.log(c.getGenes());
+        console.log(c2.getGenes());
+        c.mutate();
+        c.mutate();
+        console.log(c.getGenes());
+        console.log(c2.getGenes());
+    </script>
+
+</head>
+
+
+<body>
+</body>
+
+
+</html>
