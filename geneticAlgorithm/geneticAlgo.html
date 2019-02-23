@@ -1,5 +1,14 @@
 <html>
 <head>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script
+      src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+      integrity="sha256-3edrmyuQ0w65f8gfBsqowzjJe2iM6n0nKciPUp8y+7E="
+      crossorigin="anonymous">
+    </script>
+
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
     <script>
         class Gene
         {
@@ -201,7 +210,7 @@
         };
 
 
-        const runGeneticOptimization = function(geneticChromosome, constFunction,
+        const runGeneticOptimization = function(geneticChromosome, costFunction,
                                                 populationSize, maxGenerations,
                                                 desiredCost, mutationRate, keepNumber,
                                                 newBloodNumber)
@@ -218,7 +227,7 @@
                 matePopulation(population, populationSize);
                 newBlood(population, newBloodNumber);
                 mutatePopulation(population, mutationRate);
-                let generationResult = naturalSelection(population, keepNumber, constFunction);
+                let generationResult = naturalSelection(population, keepNumber, costFunction);
 
                 if(bestCost > generationResult.bestFit)
                 {
@@ -235,19 +244,189 @@
             return bestChromosome;
         };
 
+
+
+
+        let genericChromosomeG, costFunctionG,
+                        populationSizeG, maxGenerationsG,
+                        desiredCostG, mutationRateG, keepNumberG,
+                        newBloodNumberG, populationG, generationG,
+                        bestCostG = Number.MAX_VALUE, bestChromosomeG = genericChromosomeG;
+        const runGeneticOptimizationforGraph = function()
+        {
+
+
+
+
+            let generationResult = naturalSelection(populationG, keepNumberG, costFunctionG);
+
+            if(bestCostG > generationResult.bestFit)
+            {
+                bestChromosomeG = generationResult.bestChrom;
+                bestCostG = generationResult.bestFit;
+            }
+            populationG = generationResult.survivors;
+
+            generationG++;
+
+
+            console.log("Generation " + generationG + " Best Cost: " + bestCostG);
+
+            console.log(generationResult);
+
+            matePopulation(populationG, populationSizeG);
+            newBlood(populationG, newBloodNumberG);
+            mutatePopulation(populationG, mutationRateG);
+
+            createGraph();
+
+        };
+
+        const createGraph = function()
+        {
+                        var dataPoints = [];
+
+            console.log(dataPoints);
+
+            var data = new google.visualization.DataTable();
+            data.addColumn('number', 'Gene 1');
+            data.addColumn('number', 'Gene 2');
+
+            for(let i = 0; i < populationG.length; i++)
+            {
+                data.addRow([populationG[i].getGenes()[0].getRealValue(),
+                        populationG[i].getGenes()[1].getRealValue()]);
+            }
+
+            var options = {
+              title: 'Genetic Evolution On Two Genes Generation: ' + generationG,
+              hAxis: {title: 'Gene 1', minValue: 0, maxValue: 10},
+              vAxis: {title: 'Gene 2', minValue: 0, maxValue: 10},
+            };
+
+            var chart = new google.visualization.ScatterChart(document.getElementById('chart_div'));
+
+            chart.draw(data, options);
+        };
+
+
         let gene1 = new Gene(1,10,10);
         let gene2 = new Gene(1,10,0.4);
         let geneList = [gene1, gene2];
 
         let exampleOrganism = new Chromosome(geneList);
 
-        runGeneticOptimization(exampleOrganism, basicCostFunction, 100, 50, 0.01, 0.3, 20, 10);
+
+        genericChromosomeG = exampleOrganism;
+        costFunctionG = basicCostFunction;
+        populationSizeG = 100;
+        maxGenerationsG = 30;
+        desiredCostG = 0.00001;
+        mutationRateG = 0.3;
+        keepNumberG = 30;
+        newBloodNumberG = 10;
+        generationG = 0;
+
+
+        function resetPopulation()
+        {
+
+            autoRunning = false;
+            $("#runAutoOptimizer").val("Auto Run");
+
+            populationSizeG = $("#populationSize").val();
+            mutationRateG = $("#mutationRate").val();
+            keepNumberG = $("#survivalSize").val();
+            newBloodNumberG = $("#newBlood").val();
+            generationG = 0;
+
+            populationG = createRandomPopulation(genericChromosomeG, populationSizeG);
+            createGraph();
+        }
+
+        populationG = createRandomPopulation(genericChromosomeG, populationSizeG);
+
+
+        window.onload = function () {
+            google.charts.load('current', {'packages':['corechart']}).then(function()
+            {
+                createGraph();
+            })
+
+        };
+
+
+        let autoRunning = false;
+        function runAutoOptimizer()
+        {
+            if(autoRunning === true)
+            {
+                runGeneticOptimizationforGraph();
+                setTimeout(runAutoOptimizer, 1000);
+            }
+        }
+
+        function startStopAutoRun()
+        {
+            autoRunning = !autoRunning;
+
+            if(autoRunning)
+            {
+                $("#runAutoOptimizer").val("Stop Auto Run");
+            }
+            else
+            {
+                $("#runAutoOptimizer").val("Resume Auto Run");
+            }
+
+            runAutoOptimizer();
+        }
+
+
+
+        //runGeneticOptimization(exampleOrganism, basicCostFunction, 100, 50, 0.01, 0.3, 20, 10);
 
     </script>
+
 </head>
 
 
 <body>
+    <div id="chart_div" style="width: 900px; height: 500px;"></div>
+
+    <input class='btn btn-primary' id="runOptimizer" onclick='runGeneticOptimizationforGraph()' type="button" value="Next Generation">
+    <input class='btn btn-primary' id="runAutoOptimizer" onclick='startStopAutoRun()' type="button" value="Auto Run">
+
+    <div class="card">
+        <div class="card-header">
+            <h2>Population Variables</h2>
+        </div>
+        <div class="card-body">
+            <div class="row p-2">
+                <div class="col">
+                    <label for="populationSize">Population Size</label>
+                    <input type="text" class="form-control" id="populationSize" placeholder="Population Size" required>
+                </div>
+                <div class="col">
+                    <label for="populationSize">Survival Size</label>
+                    <input type="text" class="form-control" id="survivalSize" placeholder="Survival Size" required>
+                </div>
+            </div>
+            <div class="row p-2">
+                <div class="col">
+                    <label for="populationSize">Mutation Rate</label>
+                    <input type="text" class="form-control" id="mutationRate" placeholder="Mutation Rate" required>
+                </div>
+                <div class="col">
+                    <label for="populationSize">New Organisms Per Generation</label>
+                    <input type="text" class="form-control" id="newBlood" placeholder="New Organisms" required>
+                </div>
+            </div>
+            <br>
+            <input class='btn btn-primary' id="reset" onclick='resetPopulation()' type="button" value="Reset Population">
+        </div>
+    </div>
+
 </body>
 
 
