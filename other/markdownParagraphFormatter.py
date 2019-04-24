@@ -70,15 +70,23 @@ def wrapMarkdownParagraphsToColLimit(fileName, charLimit):
     """
     result = ""
     tempResult = ""
+    inCodeBlock = False
+
     with open(fileName) as file:
         for line in file:
-            if line.strip(" ") == "\n":
+
+            if line.startswith("```"):
+                inCodeBlock = not inCodeBlock
+                result = result + line
+            elif inCodeBlock:
+                result = result + line
+            elif line.strip(" ") == "\n":
                 result = result + formatChunk(tempResult, charLimit)
                 tempResult = ""
                 result = result + "\n"
             else:
                 tempResult = tempResult + line
-            print(line)
+
     if tempResult != "":
         result = result + formatChunk(tempResult, charLimit)
     return result
