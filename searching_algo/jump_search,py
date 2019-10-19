@@ -1,0 +1,27 @@
+'''
+Sends array, searchValue, arraySize as input.
+Returns the index of the searchValue in the array
+'''
+def jumpSearch(arr , x , n ): 
+    # Finding block size to be jumped 
+    step = math.sqrt(n) 
+      
+    # Finding the element
+    prev = 0
+    while arr[int(min(step, n)-1)] < x: 
+        prev = step 
+        step += math.sqrt(n) 
+        if prev >= n: 
+            return -1
+      
+    # Doing a linear search 
+    while arr[int(prev)] < x: 
+        prev += 1
+        
+        if prev == min(step, n): 
+            return -1
+      
+    if arr[int(prev)] == x: 
+        return prev 
+      
+    return -1
