@@ -33,7 +33,7 @@ def get_right(i):
 def repair_heap(vals_list, root, arr_top):
     """
     Sifts the root element of a heap to the correct position, to
-    correct a max heap. This assumes the children of the root node are max heaps.
+    correct a max heap. This assumes the children of the root/ node are max heaps.
 
     :param vals_list: list of values, which represents a heap structure.
     :param root: the index of the node we're working from/ using as a root.
@@ -65,6 +65,7 @@ def repair_heap(vals_list, root, arr_top):
             root = swap
             left = get_left(root)
             right = get_right(root)
+
     return vals_list
 
 
