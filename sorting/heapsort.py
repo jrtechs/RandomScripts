@@ -65,6 +65,7 @@ def repair_heap(vals_list, root, arr_top):
             root = swap
             left = get_left(root)
             right = get_right(root)
+
     return vals_list
 
 
@@ -79,6 +80,7 @@ def max_heap(vals_list):
     len_list = len(vals_list)
     for root in range(len_list//2, -1, -1):
         repair_heap(vals_list, root, len_list)
+
     return vals_list
 
 
@@ -97,8 +99,8 @@ def max_heap_to_sorted(vals_list):
         # Another way of doing this is to pass a slice of the vals_list up to the value top, but python passes
         # slices by copy so there's a massive performance hit.
         repair_heap(vals_list, 0, top)
-    return vals_list
 
+    return vals_list
 
 
 def heapsort(vals_list):
