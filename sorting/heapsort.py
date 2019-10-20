@@ -14,7 +14,7 @@ from random import randint
 
 def get_left(i):
     """
-    Get the left element index of a heap from an array.
+    Get the left element index of a heap node for an array.
     :param i: The parent index.
     :return: the left element.
     """
@@ -23,7 +23,7 @@ def get_left(i):
 
 def get_right(i):
     """
-    Get the right element index of a heap from an array.
+    Get the right element index of a heap node for an array.
     :param i: The parent index.
     :return: the right element.
     """
@@ -33,7 +33,7 @@ def get_right(i):
 def repair_heap(vals_list, root, arr_top):
     """
     Sifts the root element of a heap to the correct position, to
-    correct a max heap. This assumes the children of the parent node are max heaps.
+    correct a max heap. This assumes the children of the root node are max heaps.
 
     :param vals_list: list of values, which represents a heap structure.
     :param root: the index of the node we're working from/ using as a root.
@@ -65,7 +65,6 @@ def repair_heap(vals_list, root, arr_top):
             root = swap
             left = get_left(root)
             right = get_right(root)
-
     return vals_list
 
 
